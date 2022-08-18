@@ -1,14 +1,14 @@
 [Desktop Entry]
 Comment[de_DE]=
 Comment=
-Exec=/opt/ghidra/ghidra
+Exec=/usr/share/ghidra/ghidra
 GenericName[de_DE]=Ghidra Disassembler and Decompiler
 GenericName=Ghidra Disassembler and Decompiler
-Icon=/opt/ghidra/ghidra.png
+Icon=/usr/share/ghidra/ghidra.png
 MimeType=
 Name[de_DE]=Ghidra
 Name=Ghidra
-Path=/opt/ghidra
+Path=/usr/share/ghidra
 StartupNotify=true
 Terminal=false
 TerminalOptions=

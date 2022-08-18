@@ -1,5 +1,5 @@
 #!/bin/bash
-INSTALL_DIR=/opt
+INSTALL_DIR=/usr/share
 
 echo "Downloading Ghidra and installing to $INSTALL_DIR"
 export WGET=`which wget`
