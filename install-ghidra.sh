@@ -29,6 +29,14 @@ function 4k_scaling {
   fi
 }
 
+function allow_desktop_launching {
+  cp ghidra.desktop $HOME/.local/share/applications/ghidra.desktop
+  #Allow for launching without having to right click on the desktop file and select "Allow Launching"
+  gio set ~/Desktop/ghidra.desktop metadata::trusted true
+  chmod a+x ~/Desktop/app.desktop
+}
+
+
 #Checking to see if Java JDK is installed if not Install it first
 install_java
 
@@ -68,9 +76,11 @@ mv "$GHIDRADIR" "$GHIDRAVER"
 cp -f ghidra $GHIDRAVER/
 cp -f ghidra.png $GHIDRAVER/
 
+#Removing old versions of Ghidra?
 $SUDO rm -rf $INSTALL_DIR/ghidra
 $SUDO mv $GHIDRAVER $INSTALL_DIR/ || exit 1
 rm $GHIDRA
+
 
 for dir in Desktop Schreibtisch; do
   test -d $HOME/$dir && {
@@ -79,30 +89,33 @@ for dir in Desktop Schreibtisch; do
   }
 done
 
-cp ghidra.desktop $HOME/.local/share/applications/ghidra.desktop
+#Copy the ghidra.desktop file to the the desktop and allow for execution
+#Without having to right click and slect "Alow Launching"
+allow_desktop_launching
+
 $SUDO rm -f /usr/bin/ghidra /usr/local/bin/ghidra 
 $SUDO ln -s $INSTALL_DIR/ghidra/ghidraRun /usr/local/bin/ghidra
-
 
 cd $INSTALL_DIR || exit 1
 OLD_DIR=`readlink ghidra`
 $SUDO ln -sf $GHIDRAVER ghidra
 
 test -n "$OLD_DIR" && {
-  echo Syncing from previous ghidra direcory: $OLD_DIR
+  echo "Syncing from previous ghidra direcory: $OLD_DIR"
   RSYNC=`command -v rsync 2> /dev/null`
   test -n "$RSYNC" && {
-    echo Running $RSYNC to synchronize custom scripts to the new installation
+    echo "Running $RSYNC to synchronize custom scripts to the new installation"
     rsync -v -r --ignore-existing --exclude='*/jython*' "$DIR/Ghidra/" "$GHIDRAVER/Ghidra/"
   }
   test -z "$RSYNC" && {
-    echo Warning: rsync not found, using old and incomplete copy process ...
-    echo Copying customized scripts from $DIR to $GHIDRAVER
+    echo "Warning: rsync not found, using old and incomplete copy process ..."
+    echo "Copying customized scripts from $DIR to $GHIDRAVER"
     for dir in $OLD_DIR/Ghidra/*/*/ghidra_scripts/; do
       cp -nrv "$DIR/$dir"/* "$GHIDRAVER/$dir/" 2> /dev/null
     done
   }
 }
+
 
 GHIDRACFG=`echo .$GHIDRAVER | tr _ -`
 cd $HOME/.ghidra && {
@@ -112,7 +125,7 @@ cd $HOME/.ghidra && {
     test '!' -L "$dir" -a -d "$dir" -a -z "$DIR" && {
       DIR=$dir
       ln -s $dir $GHIDRACFG
-      echo Symlinking $HOME/.ghidra/$dir to $HOME/.ghidra/$GHIDRACFG
+      echo "Symlinking $HOME/.ghidra/$dir to $HOME/.ghidra/$GHIDRACFG"
     }
   done
 }
