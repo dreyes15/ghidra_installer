@@ -20,14 +20,33 @@ function install_java {
   fi
 }
 
+function download_unzip_gradle {
+
+  get https://services.gradle.org/distributions/gradle-7.5-bin.zip
+  unzip gradle-7.5-bin.zip
+
+}
+
+function gradle_setup {
+
+  $SUDO cp -R gradle-7.5 /usr/local/gradle
+  $SUDO echo "export PATH=/usr/local/gradle/bin:$PATH" > /etc/profile.d/gradle.sh
+  source /etc/profile.d/gradle.sh
+
+}
+
+function clean_up {
+  
+  rm gradle-7.5-bin.zip
+  rm -rf gradle-7.5
+
+}
 
 #Checking to see if Java JDK is installed if not Install it first
 install_java
 
+download_unzip_gradle
 
-wget https://services.gradle.org/distributions/gradle-7.1-bin.zip
-unzip gradle-7.1-bin.zip
+gradle_setup
 
-$SUDO cp -R gradle-7.1 /usr/local/gradle
-$SUDO echo "export PATH=/usr/local/gradle/bin:$PATH" > /etc/profile.d/gradle.sh
-source /etc/profile.d/gradle.sh
+clean_up
