@@ -48,15 +48,19 @@ function download_ghidra {
   export GHIDRADIR=`echo $GHIDRA | sed 's/_20[12][0-9].*//' `
 
   # This should be the Ghidra Version
-  export GHIDRAVER=`echo $GHIDRA | sed 's/_PUBLIC_.*//' | sed 's/_DEV_.*//' | sed 's/-BETA_.*//'`
+  export GHIDRA_VER=`echo $GHIDRA | sed 's/_PUBLIC_.*//' | sed 's/_DEV_.*//' | sed 's/-BETA_.*//'`
 
+  # Check for common errors
   echo " $GHIDRA" | sed 's/^.*\(ghidra.*\).*$/\1/' | egrep -q '/' && { echo Error: invalid ghidra filename ; exit 1 ; }
   echo " $GHIDRA" | sed 's/^.*\(ghidra.*\).*$/\1/' | egrep -q '.zip' || { echo Error: invalid ghidra filename ; exit 1 ; }
   test -d "$INSTALL_DIR" || { echo Error: install directory $INSTALL_DIR does not exist ; exit 1 ; }
-  echo "$GHIDRAVER"
-  test -e $INSTALL_DIR/$GHIDRAVER && { echo Error: $GHIDRAVER is already installed ; exit 1 ; }
 
-  echo "Downloading $GHIDRA with version $GHIDRAVER"
+  # Print the latest version of Ghidra, and check if it is already installed
+  echo "Checking to see if $GHIDRA_VER is already installed..."
+  #Check to see if this version is already installed
+  test -e $INSTALL_DIR/$GHIDRA_VER && { echo Error: $GHIDRA_VER is already installed ; exit 1 ; }
+
+  echo "Downloading $GHIDRA with version $GHIDRA_VER"
   echo
   wget -c --quiet "https://github.com/$GHIDRALINK" || exit 1
 
@@ -67,11 +71,27 @@ function download_ghidra {
 
 }
 
+function unzip_ghidra {
+  echo
+  echo Unpacking Ghidra ...
+  unzip "$GHIDRA" > /dev/null || exit 1
+  mv "$GHIDRADIR" "$GHIDRA_VER"
+  
+  cp -f ghidra $GHIDRA_VER/
+  cp -f ghidra.png $GHIDRA_VER/
+  
+  #Removing old versions of Ghidra
+  $SUDO rm -rf $INSTALL_DIR/ghidra
+  $SUDO mv $GHIDRA_VER $INSTALL_DIR/ || exit 1
+  rm $GHIDRA
+
+}
 
 #Checking to see if Java JDK is installed if not Install it first
 install_java
 
-while true; do 
+#Y/N prompt to install ghidra
+while true; do
 
   read -p "Do you want to use your custom Ghidra build (y/n) " yn
 
@@ -83,8 +103,10 @@ while true; do
   		break;;
 
   	[nN] ) 
+      echo
       echo "Downloading Official release from Github";
       download_ghidra
+      unzip_ghidra
 
       exit;;
 
@@ -94,28 +116,12 @@ while true; do
   done
 
 
-
-
-echo
-echo Unpacking Ghidra ...
-#unzip "$GHIDRA" > /dev/null || exit 1
-#mv "$GHIDRADIR" "$GHIDRAVER"
-#
-#cp -f ghidra $GHIDRAVER/
-#cp -f ghidra.png $GHIDRAVER/
-#
-##Removing old versions of Ghidra?
-#$SUDO rm -rf $INSTALL_DIR/ghidra
-#$SUDO mv $GHIDRAVER $INSTALL_DIR/ || exit 1
-#rm $GHIDRA
-#
-#
-#for dir in Desktop Schreibtisch; do
-#  test -d $HOME/$dir && {
-#    cp ghidra.desktop $HOME/$dir/ghidra.desktop
-#    chown $USER:$USER $HOME/$dir/ghidra.desktop
-#  }
-#done
+for dir in Desktop Schreibtisch; do
+  test -d $HOME/$dir && {
+    cp ghidra.desktop $HOME/$dir/ghidra.desktop
+    chown $USER:$USER $HOME/$dir/ghidra.desktop
+  }
+done
 #
 ##Copy the ghidra.desktop file to the the desktop and allow for execution
 ##Without having to right click and slect "Alow Launching"
@@ -126,26 +132,26 @@ echo Unpacking Ghidra ...
 #
 #cd $INSTALL_DIR || exit 1
 #OLD_DIR=`readlink ghidra`
-#$SUDO ln -sf $GHIDRAVER ghidra
+#$SUDO ln -sf $GHIDRA_VER ghidra
 #
 #test -n "$OLD_DIR" && {
 #  echo "Syncing from previous ghidra direcory: $OLD_DIR"
 #  RSYNC=`command -v rsync 2> /dev/null`
 #  test -n "$RSYNC" && {
 #    echo "Running $RSYNC to synchronize custom scripts to the new installation"
-#    rsync -v -r --ignore-existing --exclude='*/jython*' "$DIR/Ghidra/" "$GHIDRAVER/Ghidra/"
+#    rsync -v -r --ignore-existing --exclude='*/jython*' "$DIR/Ghidra/" "$GHIDRA_VER/Ghidra/"
 #  }
 #  test -z "$RSYNC" && {
 #    echo "Warning: rsync not found, using old and incomplete copy process ..."
-#    echo "Copying customized scripts from $DIR to $GHIDRAVER"
+#    echo "Copying customized scripts from $DIR to $GHIDRA_VER"
 #    for dir in $OLD_DIR/Ghidra/*/*/ghidra_scripts/; do
-#      cp -nrv "$DIR/$dir"/* "$GHIDRAVER/$dir/" 2> /dev/null
+#      cp -nrv "$DIR/$dir"/* "$GHIDRA_VER/$dir/" 2> /dev/null
 #    done
 #  }
 #}
 #
 #
-#GHIDRACFG=`echo .$GHIDRAVER | tr _ -`
+#GHIDRACFG=`echo .$GHIDRA_VER | tr _ -`
 #cd $HOME/.ghidra && {
 #  DIR=
 #  rm -rf $GHIDRACFG
@@ -162,5 +168,5 @@ echo Unpacking Ghidra ...
 #4k_scaling
 #
 #echo
-#echo "Successfully installed Ghidra version $GHIDRAVER to $INSTALL_DIR/$GHIDRADIR"
+#echo "Successfully installed Ghidra version $GHIDRA_VER to $INSTALL_DIR/$GHIDRADIR"
 #echo "Run using: ghidra"
