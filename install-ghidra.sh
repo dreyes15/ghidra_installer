@@ -38,14 +38,14 @@ function allow_desktop_launching {
 
 function download_ghidra {
   #Link where to find Ghidra
-  export GHIDRALINK=`$WGET -O - --quiet  https://github.com/NationalSecurityAgency/ghidra/releases/latest | grep 'releases/download/' | sed 's/.*href=..//' | sed 's/".*//' | tail -1`
-  test -z "$GHIDRALINK" && { echo Error: could not find ghidra to download ; exit 1 ; }
+  export GHIDRA_LINK=`$WGET -O - --quiet  https://github.com/NationalSecurityAgency/ghidra/releases/latest | grep 'releases/download/' | sed 's/.*href=..//' | sed 's/".*//' | tail -1`
+  test -z "$GHIDRA_LINK" && { echo Error: could not find ghidra to download ; exit 1 ; }
 
   #Strip the link parts to just keep the zip file name
-  export GHIDRA=`echo $GHIDRALINK | sed 's/^.*\(ghidra.*\).*$/\1/' `
+  export GHIDRA=`echo $GHIDRA_LINK | sed 's/^.*\(ghidra.*\).*$/\1/' `
 
   # This should result in the unpack directory in the ZIP
-  export GHIDRADIR=`echo $GHIDRA | sed 's/_20[12][0-9].*//' `
+  export GHIDRA_DIR=`echo $GHIDRA | sed 's/_20[12][0-9].*//' `
 
   # This should be the Ghidra Version
   export GHIDRA_VER=`echo $GHIDRA | sed 's/_PUBLIC_.*//' | sed 's/_DEV_.*//' | sed 's/-BETA_.*//'`
@@ -62,7 +62,7 @@ function download_ghidra {
 
   echo "Downloading $GHIDRA with version $GHIDRA_VER"
   echo
-  wget -c --quiet "https://github.com/$GHIDRALINK" || exit 1
+  wget -c --quiet "https://github.com/$GHIDRA_LINK" || exit 1
 
   echo "Checking Hashes..."
   export DOWNLOADHASH=`wget -O - --quiet  https://github.com/NationalSecurityAgency/ghidra/releases/latest | grep 'SHA-256:' | grep 'code' | sed 's:.*<code>\(.*\)</code>.*:\1:p' | tail -1`
@@ -75,14 +75,15 @@ function unzip_ghidra {
   echo
   echo Unpacking Ghidra ...
   unzip "$GHIDRA" > /dev/null || exit 1
-  mv "$GHIDRADIR" "$GHIDRA_VER"
+  mv "$GHIDRA_DIR" "$GHIDRA_VER"
   
   cp -f ghidra $GHIDRA_VER/
   cp -f ghidra.png $GHIDRA_VER/
   
-  #Removing old versions of Ghidra
+  #Removing the symlink ghidra
   $SUDO rm -rf $INSTALL_DIR/ghidra
   $SUDO mv $GHIDRA_VER $INSTALL_DIR/ || exit 1
+  #Remove the unzipped Ghidra folder
   rm $GHIDRA
 
 }
@@ -168,5 +169,5 @@ done
 #4k_scaling
 #
 #echo
-#echo "Successfully installed Ghidra version $GHIDRA_VER to $INSTALL_DIR/$GHIDRADIR"
+#echo "Successfully installed Ghidra version $GHIDRA_VER to $INSTALL_DIR/$GHIDRA_DIR"
 #echo "Run using: ghidra"
