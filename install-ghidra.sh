@@ -18,6 +18,7 @@ function install_java {
     sudo apt update
     sudo apt install openjdk-11-jdk -y
   fi
+
 }
 
 #Turning off 4K scaling
@@ -29,15 +30,18 @@ function 4k_scaling {
   then
       sed -i 's/VMARGS_LINUX=-Dsun.java2d.uiScale=1/VMARGS_LINUX=-Dsun.java2d.uiScale=2/g' /opt/ghidra/support/launch.properties
   fi
+
 }
 
 #Allow for .desktop file to execute without having to right click and slect "Alow Launching"
 function allow_desktop_launching {
-
+  
+  #This is for Ubuntu 22.04 might throw an error on Xubuntu
   cp ghidra.desktop $HOME/.local/share/applications/ghidra.desktop
   #Allow for launching without having to right click on the desktop file and select "Allow Launching"
   gio set ~/Desktop/ghidra.desktop metadata::trusted true
-  chmod a+x ~/Desktop/app.desktop
+  chmod a+x ~/Desktop/ghidra.desktop
+
 }
 
 function download_ghidra {
@@ -95,12 +99,12 @@ function unzip_ghidra {
 function copy_desktop_file {
 
   for dir in Desktop ; do
-    echo "$dir"
     test -d $HOME/$dir && {
       cp ghidra.desktop $HOME/$dir/ghidra.desktop
       chown $USER:$USER $HOME/$dir/ghidra.desktop
     }
   done
+  
 }
 
 function final_setup {
