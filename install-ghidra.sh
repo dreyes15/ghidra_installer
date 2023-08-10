@@ -10,13 +10,14 @@ test -z "$WGET" && { echo Error: wget not found ; exit 1 ; }
 function install_java {
 
   echo "Checking to see if Java is installed..."
-  PKG_OK=$(dpkg-query -W --showformat='${Status}\n' openjdk-11-jdk | grep "install ok installed")
+  PKG_OK=$(dpkg-query -W --showformat='${Status}\n' openjdk-17-jdk | grep "install ok installed")
 
   if [ "" == "$PKG_OK" ]; then
     echo "Downloading JDK .. please wait..."
-    sudo add-apt-repository ppa:openjdk-r/ppa -y > /dev/null 2>&1
     sudo apt update
-    sudo apt install openjdk-11-jdk -y
+    sudo apt install -y openjdk-17-jdk
+    sudo apt install -y openjdk-17-jre
+    
   fi
 
 }
